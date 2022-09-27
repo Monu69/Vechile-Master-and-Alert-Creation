@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Properties>
+        <!--        <property name="FILE_SIZE">${bundle:application:max.file.size}</property>-->
+        <property name="FILE_SIZE">${sys:max.file.size:-1 GB}</property>
+        <property name="infoLogFileName">${sys:log.info.file.name:-./logs/app-all.log}</property>
+        <property name="warnLogFileName">${sys:log.warn.file.name:-./logs/app-warn.log}</property>
+	
+	<property name="infoLogFilePattern">${sys:log.info.file.pattern}</property>
+	<property name="warnLogFilePattern">${sys:log.warn.file.pattern}</property>
+	
+	<property name="consolePatternLayout">${sys:console.pattern:-}</property>
+        <property name="numberOfRolloverFiles">${sys:rollover.files:-1000}</property>
+        <property name="logLevel">${sys:log.level:-INFO}</property>
+
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="${consolePatternLayout}" />
+        </Console>
+
+        <RollingFile name="infoLogFile"
+                     fileName="${infoLogFileName}"
+                     filePattern="${infoLogFilePattern}">
+            <LevelRangeFilter minLevel="FATAL" maxLevel="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
+
+            <PatternLayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level --- [%t]  %logger{36}         : %msg%n</pattern>
+            </PatternLayout>
+            <Policies>
+
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy
+                        size="${FILE_SIZE}" />
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <DefaultRolloverStrategy max="${numberOfRolloverFiles}"/>
+        </RollingFile>
+
+        <RollingFile name="warnLogFile"
+                     fileName="${warnLogFileName}"
+                     filePattern="${warnLogFilePattern}">
+            <LevelRangeFilter minLevel="FATAL" maxLevel="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+
+            <PatternLayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level --- [%t]  %logger{36}         : %msg%n</pattern>
+            </PatternLayout>
+            <Policies>
+
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy
+                        size="${FILE_SIZE}" />
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <DefaultRolloverStrategy max="${numberOfRolloverFiles}"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- LOG everything at INFO level -->
+        <Root level="${logLevel}">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="infoLogFile" />
+            <AppenderRef ref="warnLogFile" />
+
+        </Root>
+
+        <!-- LOG "com.baeldung*" at TRACE level. This has no effect, as we're doing from command line -->
+        <Logger name="com.baeldung" level="trace"></Logger>
+    </Loggers>
+
+</Configuration>

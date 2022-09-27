@@ -1,0 +1,139 @@
+plugins {
+    id 'org.springframework.boot' version '2.4.3'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java-library'
+
+
+}
+
+
+group = 'com.elogist'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+
+    maven {
+        url = uri("http://nexus.axestrack.com:8083/repository/Axestrack-all/")
+        setAllowInsecureProtocol(true)
+        credentials {
+            username = "deploy"
+            password = "deploy@nexus"
+        }
+        content{
+            excludeModule("javax.media","jai_core")
+        }
+    }
+    maven {
+        url = uri('https://repo.osgeo.org/repository/release/')
+    }
+
+    maven {
+        url = uri('https://repo.osgeo.org/repository/snapshot/')
+    }
+
+    mavenCentral()
+}
+
+configurations.all {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+ext {
+    set('springCloudVersion', "2020.0.0")
+    set('springBootVersion','2.5.0')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.4.5'
+    implementation 'com.vladmihalcea:hibernate-types-52:2.16.0'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.4.5'
+    implementation 'com.auth0:java-jwt:3.13.0'
+    implementation 'io.jsonwebtoken:jjwt:0.9.1'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis:2.4.5'
+    implementation 'com.google.code.gson:gson:2.8.7'
+    implementation 'redis.clients:jedis:3.3.0'
+    runtimeOnly 'org.postgresql:postgresql:42.2.19'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.4.5'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.4.3'
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    implementation 'org.springframework.cloud:spring-cloud-starter-config:3.0.3'
+    implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap:3.0.2'
+    implementation 'org.reflections:reflections:0.9.12'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-eureka-client'
+
+    implementation 'mysql:mysql-connector-java:6.0.6'
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre11'
+    implementation 'org.springframework:spring-jdbc:5.3.9'
+    implementation 'com.zaxxer:HikariCP:5.0.0'
+    implementation 'org.hibernate:hibernate-core:5.2.12.Final'
+    implementation 'org.hibernate:hibernate-spatial:5.2.12.Final'
+    implementation 'javax.xml.bind:jaxb-api:2.3.0'
+    implementation 'io.github.openfeign:feign-okhttp'
+    implementation 'io.github.openfeign:feign-httpclient'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign'
+
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.6.6'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.4.3'
+    implementation 'io.prometheus:simpleclient_common:0.10.0'
+    implementation 'org.springframework.metrics:spring-metrics:0.5.1.RELEASE'
+
+    implementation 'org.springframework.kafka:spring-kafka:2.6.7'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    implementation group: 'org.powerscala', name: 'powerscala-property_2.11', version: '1.6.11'
+
+    //for dataDog
+    implementation 'com.datadoghq:java-dogstatsd-client:4.0.0'
+    // Swift Common Pojos
+    implementation "com.axestrack.swift:common-pojos:2.4.11"
+    //Swift basic utils
+    api "com.axestrack.swift:basic-utils:0.0.6"
+    //SWIFT UTILS
+    implementation "com.axestrack.swift:swift-utils:1.0.9"
+
+    implementation "com.axestrack.swift:geometrical-data-structures:0.0.8"
+
+//    implementation "com.axestrack.swift:geometrical-data-structures:0.0.5"
+
+    implementation 'org.geotools:gt-geojson:25-SNAPSHOT'
+
+
+}
+
+
+test {
+    useJUnitPlatform()
+}
+task deploy(dependsOn: bootJar) {
+    doLast {
+        copy {
+            from "."
+            into "build/libs"
+            include "production*.sh"
+        }
+
+        copy {
+            from "."
+            into "build/libs"
+            include "change_loglevel.sh"
+        }
+
+    }
+}
+ext['log4j2.version'] = '2.17.1'
